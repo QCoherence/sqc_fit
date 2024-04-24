@@ -108,7 +108,7 @@ class plotting():
 
     def __init__(self, quantum_object, *args, **kwargs):
         self.quantum_object = quantum_object
-        initialise_plot()
+        self.initialise_plot()
 
     def initialise_plot(self):
         plt.close()

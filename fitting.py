@@ -81,23 +81,96 @@ class fluxonium(quantum_object):
         self.quantum_system = Fluxonium(EJ = self.initial_EJ, EC = 2.5, EL = 0.5, flux = 0.33, cutoff = 110)
 
 
-
-
     def model(self, flux_bias, parameters, transitions):
         
         fluxonium = Fluxonium(EJ=parameters['EJ']/1e9, EC=parameters['EC']/1e9, EL=parameters['EL']/1e9, flux=current_to_phiext(current, parameters), cutoff=cutoff,)
 
 
-class fluxonium_and_cavity(quantum_object):
+# class fluxonium_and_cavity(quantum_object):
 
-class fluxonium_and_cavities(quantum_object):
+# class fluxonium_and_cavities(quantum_object):
 
 
 class dataset():
     """
     Class for importing and formatting properly the data.
 
+    The elements of file_list are either just a string with the path or a dict of the form
+        {
+            'path': string containing the path to the file,
+            'label_for_I' (optional): string with the name of the dataset for I quadrature,
+            'label_for_Q' (optional): string with the name of the dataset for Q quadrature,
+            'label_quantity_to_plot' (optional): string in the list 'I', 'Q', 'I_rotated', 'Q_rotated', 'Mag', 'LogMag' 'Phase',
+            'center' (optional): boolean, default True,
+            'rescale' (optional): boolean, default False,
+        }
+        
     """
+
+    def __init__(self, file_list=[], **kwargs) -> None:
+        self.default_dict = kwargs.get('default_dict',
+        {
+            'label_for_I': 'I',
+            'label_for_Q': 'Q',
+            'label_quantity_to_plot': 'Mag',
+            'center': True,
+            'rescale': False,
+        }
+        )
+        self.file_list = file_list.copy()
+        self.file_list = complete_file_dictionnary(self.file_list)
+        self.process_data()
+
+    def complete_file_dictionnary(self, file_list):
+        output_list = []
+
+        for f in file_list:
+            if type(f)==str:
+                output_list.append({'path': f})
+            elif type(f)==dict:
+                if 'path' in f.keys():
+                    output_list.append(f)
+            else:
+                pass
+        
+        for f in output_list:
+            for k in self.default_dict.keys():
+                if k not in f.keys():
+                    f.update({k: default_dict[k]})
+
+        return output_list
+
+    def process_data(self):
+        self.create_file_object()
+        self.load_data()
+        self.calculate_quantity_to_plot()
+
+    def create_file_object(self):
+        for f in self.file_list:
+            f.update({'file_object':h5py.File(f['path'])})
+
+    def load_data(self):
+        for f in self.file_list:
+            f.update({'I':h5py.File(f['label_for_I'])})
+            f.update({'Q':h5py.File(f['label_for_Q'])})
+
+    def calculate_quantity_to_plot(self):
+        for f in self.file_list:
+            if f['label_quantity_to_plot'] = 'I':
+                quantity_to_plot = f['I']
+            f.update({'label_quantity_to_plot':quantity_to_plot})
+        
+    def center(self, dataset, apply=True):
+        if apply:
+            return np.array([m - np.mean(m) for m in dataset])
+        else:
+            return dataset
+
+    def rotate(self, complex_dataset, apply=True):
+        if apply:
+            return np.array([m - np.mean(m) for m in dataset])
+        else:
+            return dataset
 
 
 class plotting():
